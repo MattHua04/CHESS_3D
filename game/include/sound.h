@@ -3,8 +3,12 @@
 
 #include "globals.h"
 
+/**
+ * @brief Initializes the sound effects.
+ */
 void initSound();
 
+// Sound objects
 extern sf::Sound startSound;
 extern sf::Sound moveSound;
 extern sf::Sound illegalSound;

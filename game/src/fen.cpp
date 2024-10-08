@@ -16,12 +16,11 @@ string appendMoveToFEN(string fen, const string& move) {
     }
 
     // Update the board position based on the move
-    // This is a simplified example and assumes the move is in UCI format (e.g., e2e4)
     string board = fenParts[0];
     string from = move.substr(0, 2);
     string to = move.substr(2, 2);
 
-    // Convert board to a 2D array for easier manipulation
+    // Convert board to a 2D array
     vector<vector<char>> boardArray(8, vector<char>(8, ' '));
     int index = 0;
     for (char c : board) {
@@ -35,7 +34,7 @@ string appendMoveToFEN(string fen, const string& move) {
         }
     }
 
-    // Convert from and to positions to board indices
+    // Convert FROM and TO positions to board indices
     int fromRow = 8 - (from[1] - '0');
     int fromCol = from[0] - 'a';
     int toRow = 8 - (to[1] - '0');
@@ -134,7 +133,7 @@ string appendMoveToFEN(string fen, const string& move) {
     for (const string& part : fenParts) {
         newFEN += part + " ";
     }
-    newFEN.pop_back(); // Remove the trailing space
+    newFEN.pop_back();
 
     return newFEN;
 }
@@ -148,7 +147,7 @@ string changePieceAtLocation(string fen, string location, string newType, string
         fenParts.push_back(part);
     }
 
-    // Convert board to a 2D array for easier manipulation
+    // Convert board to a 2D array
     string board = fenParts[0];
     vector<vector<char>> boardArray(8, vector<char>(8, ' '));
     int index = 0;
@@ -202,7 +201,7 @@ string changePieceAtLocation(string fen, string location, string newType, string
     for (const string& part : fenParts) {
         newFEN += part + " ";
     }
-    newFEN.pop_back(); // Remove the trailing space
+    newFEN.pop_back();
 
     return newFEN;
 }
@@ -246,6 +245,6 @@ void printFEN(const string& fen) {
         for (int c = 0; c < 8; ++c) {
             cout << board[r][c] << ' ';
         }
-        cout << endl; // New line after each row
+        cout << endl;
     }
 }

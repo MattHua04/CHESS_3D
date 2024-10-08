@@ -2,14 +2,13 @@
 
 using namespace std;
 
-// Constructor: Initialize the chessboard
 ChessBoard::ChessBoard()
     : boardVAO(0), boardTexture(0), boardPosition(glm::vec3(0.0f, 0.0f, 0.0f)), hoveredPieceLocation(""),
     selectedPieceLocation(""), targetPointerLocation(""), playerTurn("white"),
     FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"), opponentProcessing(false),
     checkMatedTime(0), whiteInCheck(false), blackInCheck(false), opponentMove(""), opponentMoveReceived(false),
     gameRunning(false), overrideMode(false) {
-    // Initialize the chessboard array to null pointers
+
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
             board[i][j] = nullptr;
@@ -42,7 +41,6 @@ ChessBoard::ChessBoard(glm::vec3 position)
     checkMatedTime(0), whiteInCheck(false), blackInCheck(false), opponentMove(""), opponentMoveReceived(false),
     gameRunning(false), overrideMode(false) {
     
-    // Initialize the board with null pointers
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
             board[i][j] = nullptr;
@@ -59,7 +57,6 @@ ChessBoard::ChessBoard(glm::vec3 position)
     addPiece(new ChessPiece(6, 0, 0, "knight", "white"), 6, 0);
     addPiece(new ChessPiece(7, 0, 0, "rook", "white"), 7, 0);
 
-    // Add white pawns
     for (int i = 0; i < 8; ++i) {
         addPiece(new ChessPiece(i, 1, 0, "pawn", "white"), i, 1);
     }
@@ -74,7 +71,6 @@ ChessBoard::ChessBoard(glm::vec3 position)
     addPiece(new ChessPiece(6, 7, 0, "knight", "black"), 6, 7);
     addPiece(new ChessPiece(7, 7, 0, "rook", "black"), 7, 7);
 
-    // Add black pawns
     for (int i = 0; i < 8; ++i) {
         addPiece(new ChessPiece(i, 6, 0, "pawn", "black"), i, 6);
     }
@@ -83,14 +79,13 @@ ChessBoard::ChessBoard(glm::vec3 position)
     generateCheckerboardTexture();
 }
 
-// Function to add a chess piece to the board at the given position
 void ChessBoard::addPiece(ChessPiece* piece, int x, int y) {
     if (x >= 0 && x < 8 && y >= 0 && y < 8) {
-        piece->setPosition(x, y, 0);  // Set the piece's 3D position
+        piece->setPosition(x, y, 0);
         pieces.push_back(piece);
         if (board[y][x] != nullptr) {
             cout << "Warning: Overwriting existing piece at (" << x << ", " << y << ")" << endl;
-            delete board[x][y]; // Delete the existing piece to avoid memory leaks
+            delete board[x][y];
         }
         board[y][x] = piece;
     } else {
@@ -98,24 +93,20 @@ void ChessBoard::addPiece(ChessPiece* piece, int x, int y) {
     }
 }
 
-// Function to render the chessboard and pieces
 void ChessBoard::render() {
     glUseProgram(shaderProgram);
     glDisable(GL_CULL_FACE);
 
-    // Multiply with the view-projection matrix to get the MVP matrix
     glm::mat4 MVP = ProjectionMatrix * ViewMatrix * modelMatrix;
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, glm::value_ptr(MVP));
     glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, glm::value_ptr(ViewMatrix));
 
     glUniform3fv(glGetUniformLocation(shaderProgram, "viewPos"), 1, glm::value_ptr(camera.getPosition()));
 
-    // Activate the texture and bind it
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, boardTexture);
     glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 0);
 
-    // Bind the VAO and draw the chessboard
     glBindVertexArray(boardVAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -126,7 +117,6 @@ void ChessBoard::render() {
     }
 }
 
-// Convert chess notation to board coordinates (e.g., "e2" -> (4, 1))
 pair<int, int> ChessBoard::getPositionFromNotation(const string& notation) {
     int file = notation[0] - 'a';  // Convert 'a' to 'h' to 0-7 (column)
     int rank = notation[1] - '1';  // Convert '1' to '8' to 0-7 (row)
@@ -152,6 +142,7 @@ bool ChessBoard::inCheck(const string& player) {
         return false;
     }
     
+    // Check if any opponent pieces can attack the king
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
             if (board[i][j] != nullptr && board[i][j]->getPlayer() == ((player == "white") ? "black" : "white")) {
@@ -193,23 +184,20 @@ bool ChessBoard::checkMated(const string& player) {
 }
 
 bool ChessBoard::validMove(const string& move, bool errorsOff, bool checkCastling) {
-    // Check if the move string has a valid length (e.g., "e2e4" = 4 characters)
     if (move.length() != 4) return false;
 
-    // Extract source and destination from the move string
     int fromCol = move[0] - 'a';
     int fromRow = move[1] - '0' - 1;
     int toCol = move[2] - 'a';
     int toRow = move[3] - '0' - 1;
 
-    // Get the piece at the source position
     ChessPiece* piece = board[fromRow][fromCol];
-
     if (piece == nullptr) {
         cerr << "No piece at source position: " << move.substr(0, 2) << endl;
         return false;
     }
 
+    // Check if it is the player's turn
     if (!errorsOff && playerTurn != piece->getPlayer()) {
         cerr << "It is the opponent's turn." << endl;
         return false;
@@ -257,7 +245,6 @@ bool ChessBoard::isValidPawnMove(int fromRow, int fromCol, int toRow, int toCol,
 }
 
 bool ChessBoard::isValidKnightMove(int fromRow, int fromCol, int toRow, int toCol, bool errorsOff) {
-    // Check for the 'L' shape move (2,1 or 1,2)
     if (board[toRow][toCol] != nullptr && board[toRow][toCol]->getPlayer() == board[fromRow][fromCol]->getPlayer()) {
         if (!errorsOff) cerr << "Destination square occupied by friendly piece!" << endl;
         return false;
@@ -267,13 +254,11 @@ bool ChessBoard::isValidKnightMove(int fromRow, int fromCol, int toRow, int toCo
 }
 
 bool ChessBoard::isValidBishopMove(int fromRow, int fromCol, int toRow, int toCol, bool errorsOff) {
-    // Check for diagonal movement
     if (abs(fromRow - toRow) != abs(fromCol - toCol)) {
         if (!errorsOff) cerr << "Bishop can only move diagonally!" << endl;
         return false;
     }
 
-    // Determine the direction of movement
     int rowDirection = (toRow > fromRow) ? 1 : -1;
     int colDirection = (toCol > fromCol) ? 1 : -1;
 
@@ -283,7 +268,7 @@ bool ChessBoard::isValidBishopMove(int fromRow, int fromCol, int toRow, int toCo
     while (row != toRow && col != toCol) {
         if (board[row][col] != nullptr) {
             if (!errorsOff) cerr << "Piece blocking the bishop's path!" << endl;
-            return false; // There is a piece blocking the path
+            return false;
         }
         row += rowDirection;
         col += colDirection;
@@ -299,13 +284,11 @@ bool ChessBoard::isValidBishopMove(int fromRow, int fromCol, int toRow, int toCo
 }
 
 bool ChessBoard::isValidRookMove(int fromRow, int fromCol, int toRow, int toCol, bool errorsOff) {
-    // Check for straight line movement (horizontal or vertical)
     if (fromRow != toRow && fromCol != toCol) {
         if (!errorsOff) cerr << "Rook can only move in a straight line!" << endl;
         return false;
     }
 
-    // Determine the direction of movement
     int rowDirection = (toRow > fromRow) ? 1 : (toRow < fromRow) ? -1 : 0;
     int colDirection = (toCol > fromCol) ? 1 : (toCol < fromCol) ? -1 : 0;
 
@@ -315,7 +298,7 @@ bool ChessBoard::isValidRookMove(int fromRow, int fromCol, int toRow, int toCol,
     while (row != toRow || col != toCol) {
         if (board[row][col] != nullptr) {
             if (!errorsOff) cerr << "Piece blocking path: " << board[row][col]->getType() << " at " << row << ", " << col << endl;
-            return false; // There is a piece blocking the path
+            return false;
         }
         row += rowDirection;
         col += colDirection;
@@ -331,13 +314,11 @@ bool ChessBoard::isValidRookMove(int fromRow, int fromCol, int toRow, int toCol,
 }
 
 bool ChessBoard::isValidQueenMove(int fromRow, int fromCol, int toRow, int toCol, bool errorsOff) {
-    // A queen moves like a rook or a bishop
     return isValidRookMove(fromRow, fromCol, toRow, toCol, true) ||
             isValidBishopMove(fromRow, fromCol, toRow, toCol, true);
 }
 
 bool ChessBoard::isValidKingMove(int fromRow, int fromCol, int toRow, int toCol, bool errorsOff, bool checkCastling) {
-    // Check for a single square move in any direction
     if (board[toRow][toCol] != nullptr && board[toRow][toCol]->getPlayer() == board[fromRow][fromCol]->getPlayer()) {
         if (!errorsOff) cerr << "Destination square occupied by friendly piece!" << endl;
         return false;
@@ -373,6 +354,7 @@ bool ChessBoard::isValidKingMove(int fromRow, int fromCol, int toRow, int toCol,
 }
 
 bool ChessBoard::squareUnderAttackBy(string square, string player) {
+    // Check if any opponent pieces can attack the square
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
             if (board[i][j] != nullptr && board[i][j]->getPlayer() == player) {
@@ -386,13 +368,10 @@ bool ChessBoard::squareUnderAttackBy(string square, string player) {
     return false;
 }
 
-// Move a piece based on a move string like "e2e4"
 void ChessBoard::movePiece(const string& move) {
-    // Extract source and destination positions from the move string
     pair<int, int> src = getPositionFromNotation(move.substr(0, 2));
     pair<int, int> dst = getPositionFromNotation(move.substr(2, 2));
 
-    // Get the piece at the source position
     ChessPiece* piece = board[src.second][src.first];
 
     if (move.length() < 4 || move.length() > 5) {
@@ -408,7 +387,7 @@ void ChessBoard::movePiece(const string& move) {
         return;
     }
 
-    // Save the piece pointer that was at the destination beforehand
+    // Save the piece pointer that was at the destination
     ChessPiece* capturedPiece = board[dst.second][dst.first];
 
     // Move the piece to the destination position
@@ -450,16 +429,16 @@ void ChessBoard::movePiece(const string& move) {
         }
     }
 
-    // Check for pawn promotion
+    // Check for pawn promotion default to queen if unspecified
     if (piece->getType() == "pawn" && (dst.second == 7 || dst.second == 0)) {
-        char promotionType = (move.length() == 5) ? move[4] : 'q'; // Default to queen if no promotion type specified
+        char promotionType = (move.length() == 5) ? move[4] : 'q';
         string promotionTypeStr;
         switch (promotionType) {
             case 'q': promotionTypeStr = "queen"; break;
             case 'r': promotionTypeStr = "rook"; break;
             case 'b': promotionTypeStr = "bishop"; break;
             case 'n': promotionTypeStr = "knight"; break;
-            default: promotionTypeStr = "queen"; break; // Default to queen if invalid type
+            default: promotionTypeStr = "queen"; break;
         }
         piece->convertTo(promotionTypeStr);
         piece->setPosition(dst.first, dst.second, 0);
@@ -483,14 +462,12 @@ bool ChessBoard::testMove(const string& move) {
         return false;
     }
 
-    // Extract source and destination positions from the move string
     pair<int, int> src = getPositionFromNotation(move.substr(0, 2));
     pair<int, int> dst = getPositionFromNotation(move.substr(2, 2));
 
-    // Get the piece at the source position
     ChessPiece* piece = board[src.second][src.first];
 
-    // Save the piece pointer that was at the destination beforehand
+    // Save the piece pointer at the destination
     ChessPiece* capturedPiece = board[dst.second][dst.first];
 
     // Move the piece to the destination position
@@ -507,6 +484,7 @@ bool ChessBoard::testMove(const string& move) {
 }
 
 string ChessBoard::getSquareAtCenter() {
+    // Calculate the intersection point of viewing direction with the board on the board plane
     glm::mat4 invProjView = glm::inverse(ProjectionMatrix * ViewMatrix);
     glm::vec4 ndcCenter = glm::vec4(0.0f, 0.0f, -1.0f, 1.0f);
     glm::vec4 worldNearPoint = invProjView * ndcCenter;
@@ -559,6 +537,7 @@ void ChessBoard::userInteraction() {
         while (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {glfwPollEvents();}
     }
 
+    // Check if the game is over
     if (checkMatedTime == 0 && checkMated("black")) {
         checkMatedTime = glfwGetTime();
         cerr << "Checkmate! White wins!" << endl;
@@ -578,11 +557,14 @@ void ChessBoard::userInteraction() {
 
 void ChessBoard::update() {
     if (!gameRunning) return;
+
+    // Check if it is the opponent's turn and get the opponent's move
     if (!overrideMode && playerTurn == "black" && !opponentProcessing && !opponentMoveReceived) {
         opponentProcessing = true;
         thread opponentThread(&ChessBoard::getOpponentMove, this);
         opponentThread.detach();
     } else if (!overrideMode && playerTurn == "black" && !opponentProcessing && opponentMoveReceived) {
+        // Execute the opponent's move
         movePiece(opponentMove);
         opponentMove = "";
         opponentMoveReceived = false;
@@ -598,12 +580,13 @@ void ChessBoard::getOpponentMove() {
     auto end = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed = end - start;
     float expectedDuration = 1.0f;
+    // Wait for at least 1 second before returning the move
     if (elapsed.count() < expectedDuration) {
         this_thread::sleep_for(chrono::duration<double>(expectedDuration - elapsed.count()));
     }
 
     if (move.empty()) {
-        cerr << "Game Over" << endl;
+        cout << "Game Over" << endl;
         opponentProcessing = false;
         return;
     }
@@ -614,7 +597,7 @@ void ChessBoard::getOpponentMove() {
 
 void ChessBoard::generateBoardMesh() {
     float vertices[] = {
-        // Positions         // Normals           // Texture Coords
+        // Positions       // Normals         // Texture Coords
         1.0f, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, // Bottom-left
         -1.0f, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // Bottom-right
         -1.0f,  0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f, // Top-right
@@ -700,14 +683,12 @@ void ChessBoard::reset() {
 
     camera.setPositionAndOrientation(glm::vec3(0.0f, 3.0f, -2.5f), glm::vec3(0.0f, 0.0f, 0.0f), 90.0f, -50.0f);
 
-    // Clear and delete all pieces
     for (auto piece : pieces) {
         delete piece;
-        piece = nullptr; // Avoid dangling pointer
+        piece = nullptr;
     }
     pieces.clear();
 
-    // Initialize the board with null pointers (again, for safety)
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
             board[i][j] = nullptr;
@@ -724,7 +705,6 @@ void ChessBoard::reset() {
     addPiece(new ChessPiece(6, 0, 0, "knight", "white"), 6, 0);
     addPiece(new ChessPiece(7, 0, 0, "rook", "white"), 7, 0);
 
-    // Add white pawns
     for (int i = 0; i < 8; ++i) {
         addPiece(new ChessPiece(i, 1, 0, "pawn", "white"), i, 1);
     }
@@ -739,7 +719,6 @@ void ChessBoard::reset() {
     addPiece(new ChessPiece(6, 7, 0, "knight", "black"), 6, 7);
     addPiece(new ChessPiece(7, 7, 0, "rook", "black"), 7, 7);
 
-    // Add black pawns
     for (int i = 0; i < 8; ++i) {
         addPiece(new ChessPiece(i, 6, 0, "pawn", "black"), i, 6);
     }

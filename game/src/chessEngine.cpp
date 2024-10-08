@@ -15,8 +15,7 @@ void Stockfish::init() {
         return;
     }
     sendCommand("uci");
-    // sendCommand("setoption name UCI_LimitStrength value true");
-    // sendCommand("setoption name Skill Level value 10");
+    sendCommand("setoption name UCI_LimitStrength value true");
 }
 
 void Stockfish::sendCommand(const string& command) {
@@ -30,7 +29,7 @@ string Stockfish::readResponse() {
     while (fgets(buffer, sizeof(buffer), stockfishProcess)) {
         response += buffer;
         if (strstr(buffer, "bestmove")) {
-            break;  // Stop reading after we find the best move
+            break;
         }
     }
     return response;
@@ -60,28 +59,24 @@ string Stockfish::getMove(const string& boardPosition) {
 }
 
 string Stockfish::getMoveLocal(const string& boardPosition) {
-    // Set the position of the board
     sendCommand("position fen " + boardPosition);
-    // Request the best move
     sendCommand("go depth " + to_string(depth));
 
-    // Read and return the best move from Stockfish's response
     string response = readResponse();
 
-    // Check if the response contains "bestmove"
     if (response.find("bestmove") == string::npos) {
         cerr << "Error: 'bestmove' not found in response: " << response << endl;
-        return ""; // Return empty string if "bestmove" is not found
+        return "";
     }
 
     size_t bestMovePos = response.find("bestmove");
     if (bestMovePos == string::npos || bestMovePos + 9 >= response.size()) {
         cerr << "Error: 'bestmove' position is out of range in response: " << response << endl;
-        return ""; // Return empty string if "bestmove" position is out of range
+        return "";
     }
 
     string bestMoveStr = response.substr(bestMovePos + 9);
-    size_t spacePos = bestMoveStr.find(' '); // Find the first space
+    size_t spacePos = bestMoveStr.find(' ');
     if (spacePos != string::npos) {
         bestMoveStr = bestMoveStr.substr(0, spacePos);
         if (bestMoveStr == "(none)") {
@@ -122,25 +117,20 @@ string Stockfish::sendGetRequest(const string& url) {
     CURLcode res;
     string readBuffer;
 
-    // Initialize CURL
     curl = curl_easy_init();
     if (curl) {
-        // Set the URL
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
         // Set the write callback function to handle the response
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
-        // Perform the request
         res = curl_easy_perform(curl);
 
-        // Check for errors
         if (res != CURLE_OK) {
             cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
         }
 
-        // Clean up
         curl_easy_cleanup(curl);
     }
     
@@ -157,28 +147,24 @@ string Stockfish::parseMove(const string& response) {
     // Parse the response JSON and extract the best move
     nlohmann::json jsonResponse;
 
-    // Try parsing the JSON response
     try {
         jsonResponse = nlohmann::json::parse(response);
     } catch (const nlohmann::json::parse_error& e) {
         cerr << "JSON parse error: " << e.what() << endl;
-        return ""; // Return empty string on parse error
+        return ""; 
     }
 
-    // Check for the "bestmove" key in the response
     if (jsonResponse.contains("bestmove")) {
-        // Get the best move string
         string bestMoveStr = jsonResponse["bestmove"].get<string>().substr(9);
 
-        size_t spacePos = bestMoveStr.find(' '); // Find the first space
+        size_t spacePos = bestMoveStr.find(' ');
         if (spacePos != string::npos) {
-            return bestMoveStr.substr(0, spacePos); // Return the substring up to the first space
+            return bestMoveStr.substr(0, spacePos);
         } else {
-            // If no space is found, return the whole string as the best move
             return bestMoveStr;
         }
     } else {
         cerr << "Error: 'bestmove' not found in response: " << response << endl;
-        return ""; // Return empty string if "bestmove" is not found
+        return "";
     }
 }

@@ -4,7 +4,7 @@
 
 using namespace std;
 
-// Declare sound buffers globally
+// Sound buffers
 sf::SoundBuffer startBuffer;
 sf::SoundBuffer moveBuffer;
 sf::SoundBuffer illegalBuffer;
@@ -13,6 +13,7 @@ sf::SoundBuffer captureBuffer;
 sf::SoundBuffer checkBuffer;
 sf::SoundBuffer checkmateBuffer;
 
+// Sound objects
 sf::Sound startSound;
 sf::Sound moveSound;
 sf::Sound illegalSound;
@@ -23,7 +24,6 @@ sf::Sound checkmateSound;
 sf::Music backgroundMusic;
 
 void initSound() {
-    // Load the sound buffers
     if (!startBuffer.loadFromFile("assets/audio/start.mp3")) {
         cerr << "Error loading start sound!" << endl;
     }
@@ -59,7 +59,6 @@ void initSound() {
     }
     checkmateSound.setBuffer(checkmateBuffer);
 
-    // Load and play the background music
     if (!backgroundMusic.openFromFile("assets/audio/background.mp3")) {
         cerr << "Error loading background music!" << endl;
     }

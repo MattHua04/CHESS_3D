@@ -9,6 +9,9 @@ using namespace std;
 #define FOURCC_DXT3 0x33545844 // Equivalent to "DXT3" in ASCII
 #define FOURCC_DXT5 0x35545844 // Equivalent to "DXT5" in ASCII
 
+/**
+ * @brief Represents a packed vertex.
+ */
 struct PackedVertex{
 	glm::vec3 position;
 	glm::vec2 uv;
@@ -18,12 +21,18 @@ struct PackedVertex{
 	};
 };
 
+/**
+ * @brief Checks if a similar vertex exists in the output index.
+ */
 bool getSimilarVertexIndex_fast( 
 	PackedVertex & packed, 
 	map<PackedVertex,unsigned short> & VertexToOutIndex,
 	unsigned short & result
 );
 
+/**
+ * @brief Loads a 3D model using Assimp.
+ */
 bool loadAssImp(
     const char * path, 
     vector<unsigned short> & indices,
@@ -32,6 +41,9 @@ bool loadAssImp(
     vector<glm::vec3> & normals
     );
 
+/**
+ * @brief Indexes the VBO.
+ */
 void indexVBO(
     vector<glm::vec3> & in_vertices,
     vector<glm::vec2> & in_uvs,
@@ -42,9 +54,24 @@ void indexVBO(
     vector<glm::vec3> & out_normals
     );
 
+/**
+ * @brief Loads a shader from a file.
+ */
 GLuint loadShader(const char* VertexSourcePointer, const char* FragmentSourcePointer);
+
+/**
+ * @brief Loads a texture from a file.
+ */
 GLuint loadTexture(const char* imagepath);
+
+/**
+ * @brief Initializes the graphics.
+ */
 void initGraphics();
+
+/**
+ * @brief Cleans up the graphics.
+ */
 void shadersInit();
 
 #endif

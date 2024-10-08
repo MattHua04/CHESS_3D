@@ -2,14 +2,15 @@
 
 using namespace std;
 
+// Piece textures
 GLuint ChessPiece::blackTexture;
 GLuint ChessPiece::whiteTexture;
 GLuint ChessPiece::greyTexture;
 
 void ChessPiece::init() {
-    blackTexture = createColorTexture(glm::vec3(0.0f, 0.0f, 0.0f)); // Black
-    whiteTexture = createColorTexture(glm::vec3(1.0f, 1.0f, 1.0f)); // White
-    greyTexture = createColorTexture(glm::vec3(0.5f, 0.5f, 0.5f)); // Grey
+    blackTexture = createColorTexture(glm::vec3(0.0f, 0.0f, 0.0f));
+    whiteTexture = createColorTexture(glm::vec3(1.0f, 1.0f, 1.0f));
+    greyTexture = createColorTexture(glm::vec3(0.5f, 0.5f, 0.5f));
 }
 
 void ChessPiece::convertTo(const std::string& newType) {
@@ -19,26 +20,23 @@ void ChessPiece::convertTo(const std::string& newType) {
     updateModelMatrix();
 }
 
-// Setters
 void ChessPiece::setPosition(float x, float y, float z) {
-    // Assuming each square is 1 unit wide and boardPosition is the origin of the board
     float squareSize = 0.3f;
     glm::vec3 a0(squareSize * 4, 0, -squareSize * 4);
     glm::vec3 piecePosition(-squareSize * x - squareSize / 2, 0, squareSize * y + squareSize / 2);
-    this->position = a0 + piecePosition;  // Store the 3D position of the piece
+    this->position = a0 + piecePosition;
     boardLocation = string(1, 'a' + x) + to_string(int(y + 1));
     updateModelMatrix();
 }
 
 void ChessPiece::updateModelMatrix() {
     modelMatrix = glm::translate(glm::mat4(1.0f), position);
+    // Rotate white pieces
     if (player == "white") {
-        // Translate to origin, rotate, then translate back
         modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     }
 }
 
-// Constructor
 ChessPiece::ChessPiece(float x, float y, float z, string type, string player) {
     setPosition(x, y, z);
     this->type = type;
@@ -52,7 +50,6 @@ ChessPiece::ChessPiece(float x, float y, float z, string type, string player) {
     updateModelMatrix();
 }
 
-// Getters
 glm::vec3 ChessPiece::getPosition() const {
     return position;
 }
@@ -72,11 +69,11 @@ void ChessPiece::loadMesh() {
         return;
     }
 
-    // Create the VAO and VBOs
+    // Create VAO
     glGenVertexArrays(1, &pieceVAO);
     glBindVertexArray(pieceVAO);
 
-    // Create the vertex buffer
+    // Vertex buffer
     GLuint vertexbuffer;
     glGenBuffers(1, &vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -84,7 +81,7 @@ void ChessPiece::loadMesh() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Create the UV buffer
+    // UV buffer
     GLuint uvbuffer;
     glGenBuffers(1, &uvbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
@@ -92,7 +89,7 @@ void ChessPiece::loadMesh() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
     glEnableVertexAttribArray(1);
 
-    // Create the normal buffer
+    // Normal buffer
     GLuint normalbuffer;
     glGenBuffers(1, &normalbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
@@ -100,10 +97,9 @@ void ChessPiece::loadMesh() {
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
     glEnableVertexAttribArray(2);
 
-    // Unbind the VAO
+    // Unbind VAO
     glBindVertexArray(0);
 
-    // Store the vertex count (use indices for drawing)
     pieceVertexCount = indices.size();
 }
 
@@ -112,14 +108,12 @@ GLuint ChessPiece::createColorTexture(const glm::vec3& color) {
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
-    // Create a 1x1 pixel texture filled with the specified color
     unsigned char pixelData[3] = { static_cast<unsigned char>(color.r * 255), 
                                     static_cast<unsigned char>(color.g * 255), 
                                     static_cast<unsigned char>(color.b * 255) };
     
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, pixelData);
     
-    // Set texture parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -132,10 +126,9 @@ GLuint ChessPiece::createColorTexture(const glm::vec3& color) {
 }
 
 void ChessPiece::render() const {
-    // Choose the shader program based on the player color
     glUseProgram(shaderProgram);
 
-    // Set up lighting and view matrices
+    // Set up view matrices
     glm::mat4 MVP = ProjectionMatrix * ViewMatrix * modelMatrix;
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, glm::value_ptr(MVP));
     glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, glm::value_ptr(ViewMatrix));
@@ -146,7 +139,7 @@ void ChessPiece::render() const {
     glBindTexture(GL_TEXTURE_2D, useTexture);
     glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 0);
 
-    // Bind the vertex array object (VAO) and draw the mesh
+    // Bind VAO
     glBindVertexArray(pieceVAO);
     glDrawArrays(GL_TRIANGLES, 0, pieceVertexCount);
 }

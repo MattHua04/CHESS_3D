@@ -1,6 +1,5 @@
 #include "camera.h"
 
-// Constructor
 Camera::Camera() {
     position = glm::vec3(0.0f, 0.0f, 0.0f);
     up = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -22,7 +21,6 @@ Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, float startYaw, float
     updateCameraVectors();
 }
 
-// Returns the view matrix
 glm::mat4 Camera::getViewMatrix() {
     return glm::lookAt(position, position + front, up);
 }
@@ -34,7 +32,6 @@ void Camera::setPositionAndOrientation(glm::vec3 position, glm::vec3 up, float y
     this->pitch = pitch;
 }
 
-// Processes input received from a mouse input system
 void Camera::processMouseMovement(float xoffset, float yoffset) {
     xoffset *= mouseSensitivity;
     yoffset *= mouseSensitivity;
@@ -50,7 +47,7 @@ void Camera::processMouseMovement(float xoffset, float yoffset) {
 }
 
 void Camera::moveCamera(int direction) {
-    float velocity = movementSpeed / 100; // You can also use deltaTime for frame-rate independent movement
+    float velocity = movementSpeed / 100;
     if (direction == 0) { // Forward
         position += front * velocity;
     }
@@ -63,15 +60,14 @@ void Camera::moveCamera(int direction) {
     if (direction == 3) { // Right
         position += glm::normalize(glm::cross(front, up)) * velocity;
     }
-    if (direction == 4) { // Up (W key)
+    if (direction == 4) { // Up
         position += up * velocity;
     }
-    if (direction == 5) { // Down (S key)
+    if (direction == 5) { // Down
         position -= up * velocity;
     }
 }
 
-// Updates the camera vectors based on the current yaw and pitch
 void Camera::updateCameraVectors() {
     glm::vec3 frontVector;
     frontVector.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));

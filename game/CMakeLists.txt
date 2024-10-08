@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(3DChess)
+project(CHESS_3D)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -48,20 +48,20 @@ file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 set(SOURCES ${SOURCES})
 
 # Create the main executable
-add_executable(3DChess ${SOURCES})
+add_executable(CHESS_3D ${SOURCES})
 
 # Set the output directories for the executable
-set_target_properties(3DChess PROPERTIES
+set_target_properties(CHESS_3D PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${COMMON_OUTPUT_DIR}/bin
     LIBRARY_OUTPUT_DIRECTORY ${COMMON_OUTPUT_DIR}/bin
     ARCHIVE_OUTPUT_DIRECTORY ${COMMON_OUTPUT_DIR}/bin
 )
 
 # Include directories
-target_include_directories(3DChess PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(CHESS_3D PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 # Link libraries
-target_link_libraries(3DChess PRIVATE
+target_link_libraries(CHESS_3D PRIVATE
     ${OPENGL_LIBRARIES}
     glfw
     ${GLEW_LIBRARY}
@@ -71,11 +71,11 @@ target_link_libraries(3DChess PRIVATE
     sfml-audio
 )
 
-target_include_directories(3DChess PRIVATE /usr/local/include /opt/homebrew/include)
+target_include_directories(CHESS_3D PRIVATE /usr/local/include /opt/homebrew/include)
 
 # Add a dependency on the Stockfish build
 if(NOT EXISTS ${STOCKFISH_EXECUTABLE})
-    add_dependencies(3DChess build_stockfish)
+    add_dependencies(CHESS_3D build_stockfish)
 endif()
 
 # Copy assets to the output directory

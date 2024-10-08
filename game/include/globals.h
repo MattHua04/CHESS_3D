@@ -30,19 +30,22 @@
 extern float WIDTH;
 extern float HEIGHT;
 extern GLFWwindow* window;
+
 extern GLuint frameBuffer;
 extern GLuint frameVAO;
 extern GLuint frameVBO;
 extern GLuint frameBufferTexture;
+
 extern GLuint logoTexture;
 extern int logoTextureWidth;
 extern int logoTextureHeight;
+
 extern GLuint startTextTexture;
 extern int startTextureWidth;
 extern int startTextureHeight;
+
 extern GLuint shaderProgram;
 extern GLuint frameShaderProgram;
-extern GLuint VertexArrayID;
 
 extern GLuint MatrixID;
 extern GLuint ViewMatrixID;

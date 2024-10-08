@@ -19,7 +19,6 @@ GLuint frameBufferTexture;
 GLuint logoTexture;
 GLuint startTextTexture;
 
-// Matrix uniform IDs for each shader
 GLuint MatrixID;
 GLuint ViewMatrixID;
 GLuint ModelMatrixID;
@@ -40,14 +39,16 @@ bool remote = false;
 Stockfish stockfish;
 ChessBoard board;
 
+/**
+ * @brief Reads command line arguments.
+ */
 int readArgs(int argc, char* argv[]) {
-    // Parse command line arguments
     for (int i = 1; i < argc; i++) {
         string arg = argv[i];
         if (arg == "-depth" && i + 1 < argc) {
-            depth = stoi(argv[++i]);  // Convert to integer
+            depth = stoi(argv[++i]);
         } else if (arg == "-diff" && i + 1 < argc) {
-            difficulty = stoi(argv[++i]);  // Convert to integer
+            difficulty = stoi(argv[++i]);
             if (difficulty < 0 || difficulty > 20) {
                 difficulty = min(max(difficulty, 0), 20);
                 cerr << "Difficulty must be between 0 and 20! Defaulting to " << to_string(difficulty) << endl;
@@ -72,16 +73,25 @@ int readArgs(int argc, char* argv[]) {
     return 0;
 }
 
+/**
+ * @brief Callback for when the window is resized.
+ */
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
+/**
+ * @brief Callback for when an error occurs.
+ */
 void errorCallback(int error, const char* description) {
     cerr << "Error: " << description << endl;
 }
 
+/**
+ * @brief Callback for when the mouse moves to update camera orientation.
+ */
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-    static bool firstMouse = true; // Initial state for the first mouse input
+    static bool firstMouse = true;
 
     if (firstMouse) {
         camera.processMouseMovement(xpos, ypos);
@@ -91,6 +101,9 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
     }
 }
 
+/**
+ * @brief Move the camera based on user input.
+ */
 void processInput(GLFWwindow* window, Camera& camera) {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
         camera.moveCamera(4); // Move up
@@ -113,8 +126,10 @@ void processInput(GLFWwindow* window, Camera& camera) {
     }
 }
 
+/**
+ * @brief Initialize general requirements for the game.
+ */
 int generalInit() {
-    // Initialize GLFW
 	if( !glfwInit() )
 	{
 		fprintf( stderr, "Failed to initialize GLFW\n" );
@@ -125,10 +140,10 @@ int generalInit() {
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make macOS happy; should not be needed
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	// Open a window and create its OpenGL context
+    // Make the window
 	window = glfwCreateWindow( WIDTH, HEIGHT, "CHESS 3D", NULL, NULL);
 	if( window == NULL ){
 		fprintf( stderr, "Failed to open GLFW window.\n" );
@@ -140,8 +155,7 @@ int generalInit() {
     glfwSetErrorCallback(errorCallback);
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-	// Initialize GLEW
-	glewExperimental = true; // Needed for core profile
+	glewExperimental = true;
 	if (glewInit() != GLEW_OK) {
 		fprintf(stderr, "Failed to initialize GLEW.\n");
 		getchar();
@@ -149,27 +163,20 @@ int generalInit() {
 		return 1;
 	}
 
-	// Ensure we can capture the escape key being pressed below
+	// Capture key presses
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
     // Hide the mouse and enable unlimited movement
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
     // Set the mouse at the center of the screen
-    glfwPollEvents();
     glfwSetCursorPos(window, WIDTH/2.0f, HEIGHT/2.0f);
 
+    // Grey background
 	glClearColor(0.6f, 0.6f, 0.6f, 0.0f);
 
-	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
-	// Accept fragment if it is closer to the camera than the former one
 	glDepthFunc(GL_LESS);
-
-	// Cull triangles which normal is not towards the camera
 	glEnable(GL_CULL_FACE);
-
-    // Set up camera
-    camera = Camera(glm::vec3(0.0f, 3.0f, -2.5f), glm::vec3(0.0f, 0.0f, 0.0f), 90.0f, -50.0f);
 
     // Load shaders
     shadersInit();
@@ -196,11 +203,10 @@ int generalInit() {
     glBindTexture(GL_TEXTURE_2D, 0);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture, 0);
 
-    // Load overlay textures
+    // Load overlay textures for boot screen and start screen
     logoTexture = loadTexture("assets/textures/logo.png");
     startTextTexture = loadTexture("assets/textures/start.png");
 
-    // Unbind the texture to prevent accidental modification
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Bind the framebuffer back to the default framebuffer
@@ -213,17 +219,17 @@ int generalInit() {
     // Set up the quad for rendering the framebuffer texture
     float FBOQuadVertices[] = {
         // Positions   // Texture Coords
-        -1.0f,  1.0f,  0.0f, 1.0f, // Top-left
-        -1.0f, -1.0f,  0.0f, 0.0f, // Bottom-left
-        1.0f, -1.0f,  1.0f, 0.0f, // Bottom-right
-        1.0f,  1.0f,  1.0f, 1.0f  // Top-right
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+        1.0f, -1.0f,  1.0f, 0.0f,
+        1.0f,  1.0f,  1.0f, 1.0f,
     };
 
-    // Index order for drawing the quad as two triangles
     unsigned int FBOQuadIndices[] = {
-        0, 1, 2,  // First triangle
-        0, 2, 3   // Second triangle
+        0, 1, 2,
+        0, 2, 3,
     };
+
     GLuint vbo, ebo;
     glGenVertexArrays(1, &frameVAO);
     glGenBuffers(1, &vbo);
@@ -243,17 +249,40 @@ int generalInit() {
     glEnableVertexAttribArray(1);
     glBindVertexArray(0);
 
+    // Set up camera
+    camera = Camera(glm::vec3(0.0f, 3.0f, -2.5f), glm::vec3(0.0f, 0.0f, 0.0f), 90.0f, -50.0f);
+
+    // Set up sound
+    initSound();
+
+    // Set up chess engine
+    stockfish.init();
+    stockfish.setRemoteProcessing(remote);
+    stockfish.setDepth(depth);
+    stockfish.setDifficulty(difficulty);
+
+    // Set up chess pieces
+    ChessPiece::init();
+
+    // Set up chess board
+    board = ChessBoard(glm::vec3(0.0f, 0.0f, 0.0f));
+
     return 0;
 }
 
 void cleanup() {
     glDeleteProgram(shaderProgram);
     glDeleteProgram(frameShaderProgram);
+    glDeleteTextures(1, &frameBufferTexture);
+    glDeleteTextures(1, &logoTexture);
+    glDeleteTextures(1, &startTextTexture);
+    glDeleteFramebuffers(1, &frameBuffer);
+    glDeleteVertexArrays(1, &frameVAO);
+    glfwDestroyWindow(window);
     glfwTerminate();
 }
 
 void render(string overlayContent="") {
-    // Clear the color and depth buffers
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
     glViewport(0, 0, WIDTH, HEIGHT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -261,16 +290,15 @@ void render(string overlayContent="") {
     board.render();
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    // // Bind the texture.
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
     int fbWidth, fbHeight;
     glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
     glViewport(0, 0, fbWidth, fbHeight);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // Use the shader program for the quad
+
+    // Default frame content
     glUseProgram(frameShaderProgram);
-    // Bind the FBO texture
     glUniform1i(glGetUniformLocation(frameShaderProgram, "screenTexture"), 0);
     float aspectRatio = static_cast<float>(fbWidth) / static_cast<float>(fbHeight);
     glUniform1f(glGetUniformLocation(frameShaderProgram, "aspectRatio"), aspectRatio);
@@ -279,6 +307,7 @@ void render(string overlayContent="") {
     glUniform1i(glGetUniformLocation(frameShaderProgram, "blackMated"), board.checkMated("black"));
     glUniform1i(glGetUniformLocation(frameShaderProgram, "gameRunning"), board.getGameRunning());
 
+    // Overlay content if needed
     if (overlayContent == "start") {
         glUniform1i(glGetUniformLocation(frameShaderProgram, "useOverlayTexture"), GL_TRUE);
         glActiveTexture(GL_TEXTURE1);
@@ -293,15 +322,13 @@ void render(string overlayContent="") {
         glUniform1i(glGetUniformLocation(frameShaderProgram, "useOverlayTexture"), GL_FALSE);
     }
 
-    // Render the quad
+    // Render the frame
     glBindVertexArray(frameVAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
-    // Swap buffers
     glfwSwapBuffers(window);
     
-    // Poll for and process events
     glfwPollEvents();
 }
 
@@ -309,17 +336,12 @@ int main(int argc, char* argv[]) {
     if (readArgs(argc, argv)) {
         return 1;
     }
+
     if(generalInit()) {
         return 1;
     };
-    initSound();
-    stockfish.init();
-    stockfish.setRemoteProcessing(remote);
-    stockfish.setDepth(depth);
-    stockfish.setDifficulty(difficulty);
-    ChessPiece::init();
-    board = ChessBoard(glm::vec3(0.0f, 0.0f, 0.0f));
 
+    // Boot screen
     auto start = chrono::high_resolution_clock::now();
     while (chrono::duration_cast<chrono::seconds>(chrono::high_resolution_clock::now() - start).count() < 2) {
         if (!board.getGameRunning() && glfwGetKey(window, GLFW_KEY_ESCAPE ) == GLFW_PRESS) {
@@ -328,6 +350,7 @@ int main(int argc, char* argv[]) {
         render("logo");
     }
 
+    // Main game loop
     while (!glfwWindowShouldClose(window) ) {
         if (!board.getGameRunning() && glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
             board.startGame();
@@ -341,15 +364,13 @@ int main(int argc, char* argv[]) {
             break;
         }
 
+        // Update camera
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
         float xoffset = xpos - lastX;
         float yoffset = lastY - ypos;
-
         lastX = xpos;
         lastY = ypos;
-
-        // Process mouse movement
         camera.processMouseMovement(xoffset, yoffset);
         processInput(window, camera);
 
@@ -358,8 +379,10 @@ int main(int argc, char* argv[]) {
         ModelMatrix = glm::mat4(1.0f);
         MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         
+        // Update the chessboard
         board.update();
 
+        // Render the scene
         render((board.getGameRunning()) ? "" : "start");
     }
     
