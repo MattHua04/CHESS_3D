@@ -1,0 +1,8 @@
+game/external/*
+game/assets/audio/background.mp3
+
+build/*
+!build/output
+build/output/*
+!build/output/bin
+build/output/bin/assets/audio/background.mp3
