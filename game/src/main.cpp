@@ -169,6 +169,7 @@ int generalInit() {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
     // Set the mouse at the center of the screen
+    glfwPollEvents();
     glfwSetCursorPos(window, WIDTH/2.0f, HEIGHT/2.0f);
 
     // Grey background
