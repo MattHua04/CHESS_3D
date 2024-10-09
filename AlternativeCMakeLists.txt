@@ -1,0 +1,91 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(CHESS_3D)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -O3)
+
+# Define the common output directory
+set(COMMON_OUTPUT_DIR ${CMAKE_BINARY_DIR}/output)
+
+# Find OpenGL and other dependencies
+find_package(OpenGL REQUIRED)
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/external)
+
+cmake_policy(SET CMP0026 OLD)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external/rpavlik-cmake-modules-fe2273)
+include(CreateLaunchers)
+include(MSVCMultipleProcessCompile)
+
+include_directories(
+	external/glfw-3.1.2/include/
+	external/glm-0.9.7.1/
+	external/glew-1.13.0/include/
+	external/assimp-3.0.1270/include/
+	.
+)
+add_subdirectory(${PROJECT_SOURCE_DIR}/external/curl)
+add_subdirectory(${PROJECT_SOURCE_DIR}/external/json)
+find_package(GLEW REQUIRED)
+
+# Define Stockfish build directory
+set(STOCKFISH_DIR ${PROJECT_SOURCE_DIR}/external/Stockfish/src)
+set(STOCKFISH_EXECUTABLE ${STOCKFISH_DIR}/stockfish)
+
+# Check if Stockfish executable already exists
+if(NOT EXISTS ${STOCKFISH_EXECUTABLE})
+    add_custom_target(build_stockfish ALL
+        COMMAND make -j profile-build ARCH=x86-64
+        WORKING_DIRECTORY ${STOCKFISH_DIR}
+        COMMENT Building Stockfish
+    )
+else()
+    message(STATUS "Stockfish executable found.")
+endif()
+
+# Collect all source files for your project
+file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
+set(SOURCES ${SOURCES})
+
+# Create the main executable
+add_executable(CHESS_3D ${SOURCES})
+
+# Set the output directories for the executable
+set_target_properties(CHESS_3D PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${COMMON_OUTPUT_DIR}/bin
+    LIBRARY_OUTPUT_DIRECTORY ${COMMON_OUTPUT_DIR}/bin
+    ARCHIVE_OUTPUT_DIRECTORY ${COMMON_OUTPUT_DIR}/bin
+)
+
+# Include directories
+target_include_directories(CHESS_3D PRIVATE ${PROJECT_SOURCE_DIR}/include)
+
+# Link libraries
+target_link_libraries(CHESS_3D PRIVATE
+    ${OPENGL_LIBRARY}
+    glfw
+    GLEW_1130
+    assimp
+    nlohmann_json::nlohmann_json
+    CURL::libcurl
+    ${X11_LIBRARIES}
+    X11
+    Xrandr
+    Xinerama
+    Xcursor
+    Xi
+    pthread
+)
+
+# Add a dependency on the Stockfish build
+if(NOT EXISTS ${STOCKFISH_EXECUTABLE})
+    add_dependencies(CHESS_3D build_stockfish)
+endif()
+
+# Copy assets to the output directory
+file(COPY ${PROJECT_SOURCE_DIR}/assets DESTINATION ${COMMON_OUTPUT_DIR}/bin)
+file(COPY ${STOCKFISH_DIR}/stockfish DESTINATION ${COMMON_OUTPUT_DIR}/bin)

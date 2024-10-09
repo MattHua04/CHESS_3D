@@ -51,7 +51,12 @@ string Stockfish::getMove(const string& boardPosition) {
             return getMoveRemote(boardPosition);
         } catch (exception& e) {
             cerr << "Error processing move remotely: " << e.what() << endl;
-            return getMoveLocal(boardPosition);
+            try {
+                return getMoveLocal(boardPosition);
+            } catch (exception& e) {
+                cerr << "Error processing move locally: " << e.what() << endl;
+                return "";
+            }
         }
     } else {
         return getMoveLocal(boardPosition);
