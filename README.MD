@@ -22,7 +22,7 @@ A 3D single player chess game created with OpenGL. Stockfish was used as the opp
 ### Provided in this project:
 * SFML (2.6.x branch)
 * Stockfish
-    * At large depth settings and especially on limited hardware, Stockfish may take an unreasonable time to process moves. Try setting the processing pipeline to remote if required
+    * At large depth settings and especially on limited hardware, Stockfish may have an unreasonable response time. Try setting the processing pipeline to remote if required
 
 ## Setup/Build/Run
 <u>This project was developed on MacOS Apple Silicon, limited testing has been done in other environments.</u>
