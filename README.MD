@@ -27,9 +27,9 @@ A 3D single player chess game created with OpenGL. Stockfish was used as the opp
 ## Setup/Build
 1. Install/configure dependencies:
  * Mac: ```brew install glfw glew glm assimp curl nlohmann-json```
- * Windows: ```git clone https://github.com/microsoft/vcpkg.git
-.\vcpkg\bootstrap-vcpkg.bat
-.\vcpkg\vcpkg install glfw3 glew glm assimp curl nlohmann-json
+ * Windows: ```git clone https://github.com/microsoft/vcpkg.git && 
+.\vcpkg\bootstrap-vcpkg.bat && 
+.\vcpkg\vcpkg install glfw3 glew glm assimp curl nlohmann-json && 
 .\vcpkg\vcpkg integrate install```
  * Linux: ```sudo apt install libglfw3-dev libglew-dev libglm-dev assimp-utils libcurl4-openssl-dev nlohmann-json3-dev```
  * A zip folder with provided dependencies has also been provided. If you choose to use it then extract the contents to /external and make the alternate CMakeLists.txt files active:
