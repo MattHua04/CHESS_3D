@@ -20,19 +20,35 @@ A 3D single player chess game created with OpenGL. Stockfish was used as the opp
 * __Curl__
 * __JSON__
 ### Provided in project:
-* SFML
+* SFML (2.6.x branch)
 * Stockfish
- * At large depth settings and especially on limited hardware, Stockfish may take an unreasonable time to process moves. Try setting the processing pipeline to remote if required
+    * At large depth settings and especially on limited hardware, Stockfish may take an unreasonable time to process moves. Try setting the processing pipeline to remote if required
 
-## Setup/Build
+## Setup/Build/Run
+<u>This project was developed on MacOS Apple Silicon, limited testing has been done in other environments.</u>
 1. Install/configure dependencies:
- * Mac: ```brew install glfw glew glm assimp curl nlohmann-json```
- * Windows: ```git clone https://github.com/microsoft/vcpkg.git && 
-.\vcpkg\bootstrap-vcpkg.bat && 
-.\vcpkg\vcpkg install glfw3 glew glm assimp curl nlohmann-json && 
-.\vcpkg\vcpkg integrate install```
- * Linux: ```sudo apt install libglfw3-dev libglew-dev libglm-dev assimp-utils libcurl4-openssl-dev nlohmann-json3-dev```
- * A zip folder with provided dependencies has also been provided. If you choose to use it then extract the contents to /external and make the alternate CMakeLists.txt files active:
-  * [Alternate CMakeLists.txt file in /game](game/AlternateCMakeLists.txt)
-  * [Alternate CMakeLists.txt file in /game/external](game/external/AlternateCMakeLists.txt)
-2. 
+    * __Mac__: 
+```brew install glfw glew glm assimp curl nlohmann-json```
+
+    * __Windows__: 
+```.\vcpkg\vcpkg install glfw glew glm assimp curl nlohmann-json && .\vcpkg\vcpkg integrate install```
+
+    * __Linux__: 
+```sudo apt install libglfw3-dev libglew-dev libglm-dev assimp-utils libcurl4-openssl-dev nlohmann-json3-dev```
+
+    * A zip folder with provided dependencies has also been provided. If you choose to use it then extract the contents to __external__ and make the alternate CMakeLists.txt files active:
+        * [Alternate CMakeLists.txt file in /game](game/AlternateCMakeLists.txt)
+        * [Alternate CMakeLists.txt file in /game/external](game/external/AlternateCMakeLists.txt)
+
+2. Aquire assets:
+    * Download [background music](game/assets/audio/background.mp3)
+        * Either manually download it from this repo or use ```git lfs pull```
+
+3. Build:
+    * Execute in the __build__ directory: ```cmake .. && make``` or ```cmake .. && cmake --build .```
+    * If using system level packages doesn't build properly, try the provided packages.
+
+4. Run:
+    * Execute in the __build/output/bin__ directory: ```./CHESS_3D```
+
+
