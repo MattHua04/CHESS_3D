@@ -31,7 +31,7 @@ A 3D single player chess game created with OpenGL. Stockfish was used as the opp
 ```brew install glfw glew glm assimp curl nlohmann-json```
 
     * __Windows__: 
-```.\vcpkg\vcpkg install glfw glew glm assimp curl nlohmann-json && .\vcpkg\vcpkg integrate install```
+```./vcpkg/vcpkg install glfw glew glm assimp curl nlohmann-json && ./vcpkg/vcpkg integrate install```
 
     * __Linux__: 
 ```sudo apt install libglfw3-dev libglew-dev libglm-dev assimp-utils libcurl4-openssl-dev nlohmann-json3-dev```
