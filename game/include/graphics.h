@@ -65,11 +65,6 @@ GLuint loadShader(const char* VertexSourcePointer, const char* FragmentSourcePoi
 GLuint loadTexture(const char* imagepath);
 
 /**
- * @brief Initializes the graphics.
- */
-void initGraphics();
-
-/**
  * @brief Cleans up the graphics.
  */
 void shadersInit();
