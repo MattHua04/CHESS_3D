@@ -257,10 +257,12 @@ int generalInit() {
     initSound();
 
     // Set up chess engine
-    stockfish.init();
-    stockfish.setRemoteProcessing(remote);
+    if (!remote) {
+        stockfish.init();
+        stockfish.setDifficulty(difficulty);
+    }
     stockfish.setDepth(depth);
-    stockfish.setDifficulty(difficulty);
+    stockfish.setRemoteProcessing(remote);
 
     // Set up chess pieces
     ChessPiece::init();
@@ -355,6 +357,7 @@ int main(int argc, char* argv[]) {
     while (!glfwWindowShouldClose(window) ) {
         if (!board.getGameRunning() && glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
             board.startGame();
+            camera.setPositionAndOrientation(glm::vec3(0.0f, 3.0f, -2.5f), glm::vec3(0.0f, 0.0f, 0.0f), 90.0f, -50.0f);
             while (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {glfwPollEvents();}
             startSound.play();
         } else if (board.getGameRunning() && glfwGetKey(window, GLFW_KEY_ESCAPE ) == GLFW_PRESS) {

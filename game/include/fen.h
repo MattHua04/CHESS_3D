@@ -14,6 +14,11 @@ using namespace std;
 string appendMoveToFEN(string fen, const string& move);
 
 /**
+ * @brief Decrements the full move counter and swaps player with next move.
+ */
+string decrementFullMoveCounter(string fen);
+
+/**
  * @brief Changes the piece at a location in the FEN string.
  * @param fen The FEN string.
  * @param location The location to change.

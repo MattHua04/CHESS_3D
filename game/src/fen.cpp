@@ -206,6 +206,39 @@ string changePieceAtLocation(string fen, string location, string newType, string
     return newFEN;
 }
 
+string decrementFullMoveCounter(string fen) {
+    vector<string> fenParts;
+    stringstream ss(fen);
+    string part;
+    while (getline(ss, part, ' ')) {
+        fenParts.push_back(part);
+    }
+    
+    // Decrement the fullmove counter
+    if (!fenParts.empty()) {
+        stringstream ss(fenParts[5]);
+        int fullmoveCounter;
+        ss >> fullmoveCounter;
+        if (fullmoveCounter > 1) {
+            fullmoveCounter--;
+        }
+        fenParts[5] = to_string(fullmoveCounter);
+    }
+
+    // Switch the player who should move
+    if (!fenParts.empty()) {
+        fenParts[1] = (fenParts[1] == "w") ? "b" : "w";
+    }
+
+    string newFEN;
+    for (const string& part : fenParts) {
+        newFEN += part + " ";
+    }
+    newFEN.pop_back();
+
+    return newFEN;
+}
+
 void printFEN(const string& fen) {
     // Split the FEN string into parts
     string boardPart = fen.substr(0, fen.find(' '));

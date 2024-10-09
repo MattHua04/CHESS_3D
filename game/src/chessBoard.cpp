@@ -335,6 +335,8 @@ bool ChessBoard::isValidKingMove(int fromRow, int fromCol, int toRow, int toCol,
             valid = true;
             if (!errorsOff) {
                 movePiece((playerTurn == "white") ? "h1f1" : "h8f8");
+                playerTurn = (playerTurn == "white") ? "black" : "white";
+                FEN = decrementFullMoveCounter(FEN);
                 castleSound.play();
             }
         }
@@ -346,6 +348,8 @@ bool ChessBoard::isValidKingMove(int fromRow, int fromCol, int toRow, int toCol,
             valid = true;
             if (!errorsOff) {
                 movePiece((playerTurn == "white") ? "a1d1" : "a8d8");
+                playerTurn = (playerTurn == "white") ? "black" : "white";
+                FEN = decrementFullMoveCounter(FEN);
                 castleSound.play();
             }
         }
