@@ -11,7 +11,7 @@
 A 3D single player chess game created with OpenGL. Stockfish was used as the opponent with options to process moves locally or with a public REST API. Sound effects and music were implemented using SFML.
 
 ## Requirements
-### Preferrably installed at system level:
+### Preferably installed at system level:
 * __OpenGL__
 * __GLFW__
 * __GLEW__
@@ -19,7 +19,7 @@ A 3D single player chess game created with OpenGL. Stockfish was used as the opp
 * __AssImp__
 * __Curl__
 * __JSON__
-### Provided in project:
+### Provided in this project:
 * SFML (2.6.x branch)
 * Stockfish
     * At large depth settings and especially on limited hardware, Stockfish may take an unreasonable time to process moves. Try setting the processing pipeline to remote if required
