@@ -133,6 +133,8 @@ void ChessPiece::render() const {
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, glm::value_ptr(MVP));
     glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, glm::value_ptr(ViewMatrix));
 
+    glUniform3fv(glGetUniformLocation(shaderProgram, "viewPos"), 1, glm::value_ptr(camera.getPosition()));
+
     // Bind texture
     glActiveTexture(GL_TEXTURE0);
     GLuint useTexture = (player == "white" && hovered) ? greyTexture : pieceTexture;

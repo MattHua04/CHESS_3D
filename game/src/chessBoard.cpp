@@ -654,7 +654,7 @@ void ChessBoard::generateCheckerboardTexture() {
         for (int x = 0; x < width; ++x) {
             int squareX = x / squareSize;
             int squareY = y / squareSize;
-            unsigned char color = (squareX % 2 == squareY % 2) ? 255 : 0;
+            unsigned char color = (squareX % 2 == squareY % 2) ? 0 : 255;
 
             data[(y * width + x) * 3 + 0] = color; // R
             data[(y * width + x) * 3 + 1] = color; // G
