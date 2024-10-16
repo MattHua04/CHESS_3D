@@ -116,9 +116,9 @@ const char* FrameFragmentSourcePointer = R"(
 	uniform float aspectRatio;
 
 	uniform bool useOverlayTexture;
-	uniform bool whiteInCheck;
-    uniform bool whiteMated;
-    uniform bool blackMated;
+	uniform bool playerInCheck;
+    uniform bool playerMated;
+    uniform bool opponentMated;
 	uniform bool gameRunning;
 
 	void main()
@@ -133,11 +133,11 @@ const char* FrameFragmentSourcePointer = R"(
 			color.rgb = vec3(1.0) - color.rgb; // Invert the color around crosshair
 		}
 
-		if (whiteMated) {
+		if (playerMated) {
             color *= vec4(1.0f, 0.25f, 0.25f, 1.0f); // Red shift
-        } else if (blackMated) {
+        } else if (opponentMated) {
             color *= vec4(0.25f, 1.0f, 0.25f, 1.0f); // Green shift
-        } else if (whiteInCheck) {
+        } else if (playerInCheck) {
             color *= vec4(1.0f, 0.5f, 0.5f, 1.0f); // Slighly red shift
         }
 

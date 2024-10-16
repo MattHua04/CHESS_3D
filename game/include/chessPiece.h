@@ -101,6 +101,7 @@ public:
     static GLuint blackTexture; // Texture for black pieces
     static GLuint whiteTexture; // Texture for white pieces
     static GLuint greyTexture; // Texture for grey pieces
+    static GLuint darkGreyTexture; // Texture for dark grey pieces
 
 private:
     string type; // Type of the piece

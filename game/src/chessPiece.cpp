@@ -6,11 +6,13 @@ using namespace std;
 GLuint ChessPiece::blackTexture;
 GLuint ChessPiece::whiteTexture;
 GLuint ChessPiece::greyTexture;
+GLuint ChessPiece::darkGreyTexture;
 
 void ChessPiece::init() {
     blackTexture = createColorTexture(glm::vec3(0.0f, 0.0f, 0.0f));
     whiteTexture = createColorTexture(glm::vec3(1.0f, 1.0f, 1.0f));
     greyTexture = createColorTexture(glm::vec3(0.5f, 0.5f, 0.5f));
+    darkGreyTexture = createColorTexture(glm::vec3(0.2f, 0.2f, 0.2f));
 }
 
 void ChessPiece::convertTo(const std::string& newType) {
@@ -137,7 +139,13 @@ void ChessPiece::render() const {
 
     // Bind texture
     glActiveTexture(GL_TEXTURE0);
-    GLuint useTexture = (player == "white" && hovered) ? greyTexture : pieceTexture;
+    GLuint useTexture;
+    if (player == "white") {
+        useTexture = (hovered) ? greyTexture : pieceTexture;
+    } else {
+        useTexture = (hovered) ? darkGreyTexture : pieceTexture;
+    }
+
     glBindTexture(GL_TEXTURE_2D, useTexture);
     glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 0);
 

@@ -334,7 +334,7 @@ bool ChessBoard::isValidKingMove(int fromRow, int fromCol, int toRow, int toCol,
              !squareUnderAttackBy("e8", "white") && !squareUnderAttackBy("f8", "white") && !squareUnderAttackBy("g8", "white"))) {
             valid = true;
             if (!errorsOff) {
-                movePiece((playerTurn == "white") ? "h1f1" : "h8f8");
+                movePiece((playerTurn == "white") ? "h1f1" : "h8f8", false);
                 playerTurn = (playerTurn == "white") ? "black" : "white";
                 FEN = decrementFullMoveCounter(FEN);
                 castleSound.play();
@@ -347,7 +347,7 @@ bool ChessBoard::isValidKingMove(int fromRow, int fromCol, int toRow, int toCol,
              !squareUnderAttackBy("e8", "white") && !squareUnderAttackBy("d8", "white") && !squareUnderAttackBy("c8", "white"))) {
             valid = true;
             if (!errorsOff) {
-                movePiece((playerTurn == "white") ? "a1d1" : "a8d8");
+                movePiece((playerTurn == "white") ? "a1d1" : "a8d8", false);
                 playerTurn = (playerTurn == "white") ? "black" : "white";
                 FEN = decrementFullMoveCounter(FEN);
                 castleSound.play();
@@ -372,7 +372,7 @@ bool ChessBoard::squareUnderAttackBy(string square, string player) {
     return false;
 }
 
-void ChessBoard::movePiece(const string& move) {
+void ChessBoard::movePiece(const string& move, bool sendMoveToMultiplayerOpponent) {
     pair<int, int> src = getPositionFromNotation(move.substr(0, 2));
     pair<int, int> dst = getPositionFromNotation(move.substr(2, 2));
 
@@ -454,6 +454,7 @@ void ChessBoard::movePiece(const string& move) {
         FEN = appendMoveToFEN(FEN, move);
     }
 
+    if (sendMoveToMultiplayerOpponent && multiplayer && playerTurn == playerColor) sendMove(move);
     playerTurn = (playerTurn == "white") ? "black" : "white";
     if (playNormalMoveSound) moveSound.play();
 }
@@ -513,7 +514,7 @@ void ChessBoard::checkHoveredPieces() {
     hoveredPieceLocation = "";
     bool pieceHovered = false;
     for (auto& piece : pieces) {
-        if (piece->getPlayer() != "white" && !overrideMode) continue;
+        if (piece->getPlayer() != playerColor && !overrideMode) continue;
         if (!pieceHovered && piece->getBoardLocation() == targetPointerLocation) {
             piece->setHovered(true);
             hoveredPieceLocation = piece->getBoardLocation();
@@ -561,13 +562,17 @@ void ChessBoard::userInteraction() {
 
 void ChessBoard::update() {
     if (!gameRunning) return;
+    if (resetBoard) {
+        resetBoard = false;
+        reset();
+    }
 
     // Check if it is the opponent's turn and get the opponent's move
-    if (!overrideMode && playerTurn == "black" && !opponentProcessing && !opponentMoveReceived) {
+    if (!overrideMode && playerTurn != playerColor && !opponentProcessing && !opponentMoveReceived) {
         opponentProcessing = true;
         thread opponentThread(&ChessBoard::getOpponentMove, this);
         opponentThread.detach();
-    } else if (!overrideMode && playerTurn == "black" && !opponentProcessing && opponentMoveReceived) {
+    } else if (!overrideMode && playerTurn != playerColor && !opponentProcessing && opponentMoveReceived) {
         // Execute the opponent's move
         movePiece(opponentMove);
         opponentMove = "";
@@ -579,7 +584,12 @@ void ChessBoard::update() {
 void ChessBoard::getOpponentMove() {
     auto start = chrono::high_resolution_clock::now();
     
-    string move = stockfish.getMove(FEN);
+    string move;
+    if (multiplayer) {
+        move = getMultiplayerMove();
+    } else {
+        move = stockfish.getMove(FEN);
+    }
 
     auto end = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed = end - start;
@@ -685,7 +695,11 @@ void ChessBoard::reset() {
     whiteInCheck = false;
     blackInCheck = false;
 
-    camera.setPositionAndOrientation(glm::vec3(0.0f, 3.0f, -2.5f), glm::vec3(0.0f, 0.0f, 0.0f), 90.0f, -50.0f);
+    if (playerColor == "white") {
+        camera = Camera(glm::vec3(0.0f, 3.0f, -2.5f), glm::vec3(0.0f, 0.0f, 0.0f), 90.0f, -50.0f);
+    } else {
+        camera = Camera(glm::vec3(0.0f, 3.0f, 2.5f), glm::vec3(0.0f, 0.0f, 0.0f), -90.0f, -50.0f);
+    }
 
     for (auto piece : pieces) {
         delete piece;

@@ -6,6 +6,7 @@
 #include "chessEngine.h"
 #include "chessPiece.h"
 #include "chessBoard.h"
+#include "multiplayer.h"
 
 using namespace std;
 
@@ -36,8 +37,11 @@ static float lastY = HEIGHT / 2.0f;
 int depth = 10;
 int difficulty = 10; // 0-20
 bool remote = false;
+atomic<bool> multiplayer = false;
+string playerColor = "white";
 Stockfish stockfish;
 ChessBoard board;
+atomic<bool> resetBoard = false;
 
 /**
  * @brief Reads command line arguments.
@@ -62,9 +66,11 @@ int readArgs(int argc, char* argv[]) {
             } else {
                 cerr << "Missing argument for -width, defaulting to " << WIDTH << endl;
             }
+        } else if (arg == "-multiplayer") {
+            multiplayer = true;
         } else {
             cerr << "Unknown argument: " << arg << endl;
-            cerr << "Usage: " << argv[0] << " [-width <window width>] [-depth <depth>] [-diff <difficulty>]" << endl;
+            cerr << "Usage: " << argv[0] << " [-width <window width>] [-depth <depth>] [-diff <difficulty>] [-remote] [-multiplayer]" << endl;
             return 1;
         }
     }
@@ -251,7 +257,11 @@ int generalInit() {
     glBindVertexArray(0);
 
     // Set up camera
-    camera = Camera(glm::vec3(0.0f, 3.0f, -2.5f), glm::vec3(0.0f, 0.0f, 0.0f), 90.0f, -50.0f);
+    if (playerColor == "white") {
+        camera = Camera(glm::vec3(0.0f, 3.0f, -2.5f), glm::vec3(0.0f, 0.0f, 0.0f), 90.0f, -50.0f);
+    } else {
+        camera = Camera(glm::vec3(0.0f, 3.0f, 2.5f), glm::vec3(0.0f, 0.0f, 0.0f), -90.0f, -50.0f);
+    }
 
     // Set up sound
     initSound();
@@ -274,6 +284,7 @@ int generalInit() {
 }
 
 void cleanup() {
+    cleanupMultiplayer();
     glDeleteProgram(shaderProgram);
     glDeleteProgram(frameShaderProgram);
     glDeleteTextures(1, &frameBufferTexture);
@@ -305,9 +316,9 @@ void render(string overlayContent="") {
     glUniform1i(glGetUniformLocation(frameShaderProgram, "screenTexture"), 0);
     float aspectRatio = static_cast<float>(fbWidth) / static_cast<float>(fbHeight);
     glUniform1f(glGetUniformLocation(frameShaderProgram, "aspectRatio"), aspectRatio);
-    glUniform1i(glGetUniformLocation(frameShaderProgram, "whiteInCheck"), board.inCheck("white"));
-    glUniform1i(glGetUniformLocation(frameShaderProgram, "whiteMated"), board.checkMated("white"));
-    glUniform1i(glGetUniformLocation(frameShaderProgram, "blackMated"), board.checkMated("black"));
+    glUniform1i(glGetUniformLocation(frameShaderProgram, "playerInCheck"), board.inCheck(playerColor));
+    glUniform1i(glGetUniformLocation(frameShaderProgram, "playerMated"), board.checkMated(playerColor));
+    glUniform1i(glGetUniformLocation(frameShaderProgram, "opponentMated"), board.checkMated((playerColor == "white") ? "black" : "white"));
     glUniform1i(glGetUniformLocation(frameShaderProgram, "gameRunning"), board.getGameRunning());
 
     // Overlay content if needed
@@ -340,6 +351,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // If multiplayer mode is set, look for an opponent
+    if (multiplayer) {
+        playerColor = lookForOpponent();
+    }
+
     if(generalInit()) {
         return 1;
     };
@@ -357,10 +373,15 @@ int main(int argc, char* argv[]) {
     while (!glfwWindowShouldClose(window) ) {
         if (!board.getGameRunning() && glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
             board.startGame();
-            camera.setPositionAndOrientation(glm::vec3(0.0f, 3.0f, -2.5f), glm::vec3(0.0f, 0.0f, 0.0f), 90.0f, -50.0f);
+            if (playerColor == "white") {
+                camera.setPositionAndOrientation(glm::vec3(0.0f, 3.0f, -2.5f), glm::vec3(0.0f, 0.0f, 0.0f), 90.0f, -50.0f);
+            } else {
+                camera.setPositionAndOrientation(glm::vec3(0.0f, 3.0f, 2.5f), glm::vec3(0.0f, 0.0f, 0.0f), -90.0f, -50.0f);
+            }
             while (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {glfwPollEvents();}
             startSound.play();
         } else if (board.getGameRunning() && glfwGetKey(window, GLFW_KEY_ESCAPE ) == GLFW_PRESS) {
+            if (multiplayer) sendMove("reset");
             board.reset();
             while (glfwGetKey(window, GLFW_KEY_ESCAPE ) == GLFW_PRESS) {glfwPollEvents();}
             checkmateSound.play();

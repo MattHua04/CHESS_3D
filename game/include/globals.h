@@ -10,6 +10,9 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <atomic>
+#include <arpa/inet.h>
+#include <unistd.h>
 #include <map>
 #include <utility>
 #include <filesystem>
@@ -26,10 +29,17 @@
 #include <nlohmann/json.hpp>
 #include <SFML/Audio.hpp>
 #include "camera.h"
+#include "config.h"
+
+using namespace std;
 
 extern float WIDTH;
 extern float HEIGHT;
 extern GLFWwindow* window;
+extern bool remote;
+extern atomic<bool> multiplayer;
+extern string playerColor;
+extern atomic<bool> resetBoard;
 
 extern GLuint frameBuffer;
 extern GLuint frameVAO;

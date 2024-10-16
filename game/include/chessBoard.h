@@ -7,6 +7,7 @@
 #include "fen.h"
 #include "chessEngine.h"
 #include "sound.h"
+#include "multiplayer.h"
 
 using namespace std;
 
@@ -93,7 +94,7 @@ public:
      * @brief Moves a piece on the chessboard.
      * @param move The move to make.
      */
-    void movePiece(const string& move);
+    void movePiece(const string& move, bool sendMoveToMultiplayerOpponent=true);
 
     /**
      * @brief Gets the move from the opponent (Stockfish).
@@ -223,7 +224,5 @@ private:
      */
     bool isValidPawnMove(int fromRow, int fromCol, int toRow, int toCol, ChessPiece* piece, bool errorsOff=false);
 };
-
-extern ChessBoard chessBoard;
 
 #endif
