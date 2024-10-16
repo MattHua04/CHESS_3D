@@ -9,7 +9,7 @@ Click for Demo Video
 
 ## Overview
 
-A 3D single player chess game created with OpenGL. Stockfish was used as the opponent with options to process moves locally or with a public REST API. Sound effects and music were implemented using SFML.
+A 3D single or multiplayer player chess game created with OpenGL. Stockfish was used as the opponent with options to process moves locally or with a public REST API. Sound effects and music were implemented using SFML. TCP was used to support multiplayer games.
 
 ## Requirements
 ### Preferably installed at system level:
