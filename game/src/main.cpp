@@ -70,7 +70,7 @@ int readArgs(int argc, char* argv[]) {
             multiplayer = true;
         } else {
             cerr << "Unknown argument: " << arg << endl;
-            cerr << "Usage: " << argv[0] << " [-width <window width>] [-depth <depth>] [-diff <difficulty>] [-remote] [-multiplayer]" << endl;
+            cerr << "Usage: " << argv[0] << " [-width <window width>] [-depth <processing depth>] [-diff <difficulty>] [-remote] [-multiplayer]" << endl;
             return 1;
         }
     }
