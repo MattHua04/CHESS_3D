@@ -3,3 +3,4 @@ build/*
 build/output/*
 !build/output/bin
 .vscode/*
+game/include/config.h
