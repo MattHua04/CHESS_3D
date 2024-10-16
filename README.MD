@@ -41,12 +41,15 @@ __This project was developed on MacOS Apple Silicon, limited testing has been do
         * [Alternate CMakeLists.txt file in /game](game/AlternateCMakeLists.txt)
         * [Alternate CMakeLists.txt file in /game/external](game/external/AlternateCMakeLists.txt)
 
-2. Aquire assets:
+2. Aquire assets/setup configurations:
     * Download [background music](game/assets/audio/background.mp3)
         * Either manually download it from this repo or use ```git lfs pull```
 
+    * Rename [config.txt](game/include/config.txt) to ```config.h``` and replace ```<SERVER_IP_ADDRESS>``` with the IP address of the machine you choose to host the server on. Ensure the ```PORT``` number has permissions set correctly and configure port forwarding if public access is required.
+
 3. Build:
     * Execute in the __build__ directory: ```cmake .. && make``` or ```cmake .. && cmake --build .```
+
     * If using system level packages doesn't build properly, try the provided packages.
 
 4. Run:
