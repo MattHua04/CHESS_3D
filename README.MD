@@ -55,9 +55,9 @@ __This project was developed on MacOS Apple Silicon, limited testing has been do
 4. Run:
     * Execute in the __build/output/bin__ directory: ```./CHESS_3D```
 
-        * ```-width```: optional manual window width (defaults to 1024 px)
-        * ```-diff```: optional manual Stockfish difficulty [0, 20] (only applies to local Stockfish, defaults to 10)
-        * ```-depth```: optional manual processing depth for Stockfish (defaults to 10)
+        * ```-width <window width>```: optional manual window width (defaults to 1024 px)
+        * ```-diff <difficulty>```: optional manual Stockfish difficulty [0, 20] (only applies to local Stockfish, defaults to 10)
+        * ```-depth <processing depth>```: optional manual processing depth for Stockfish (defaults to 10)
         * ```-remote```: optional flag to use the Stockfish REST API instead of running Stockfish locally
         * ```-multiplayer```: optional flag to attempt joining a multiplayer match
 
