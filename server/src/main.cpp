@@ -37,6 +37,7 @@ void handlePlayer(int sender, int receiver) {
         send(receiver, &message_length_network, sizeof(message_length_network), 0);
         // Forward the actual message to destination player
         send(receiver, buffer, message_length, 0);
+        cout << "Client " << sender << " -> Client " << receiver << ": " << buffer << endl;
     }
 
     close(sender);
