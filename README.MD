@@ -52,6 +52,8 @@ __This project was developed on MacOS Apple Silicon, limited testing has been do
 
     * If using system level packages doesn't build properly, try the provided packages.
 
+    * To start the multiplayer server, execute in the [server source directory](server/src/): ```g++ main.cpp -o main && ./main```
+
 4. Run:
     * Execute in the __build/output/bin__ directory: ```./CHESS_3D```
 
