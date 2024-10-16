@@ -554,7 +554,7 @@ void ChessBoard::userInteraction() {
     } else if (checkMated("black") || checkMated("white")) {
         double elapsed = glfwGetTime() - checkMatedTime;
         float expectedDuration = 3.0f;
-        if (!opponentProcessing && elapsed >= expectedDuration) {
+        if ((!opponentProcessing || multiplayer) && elapsed >= expectedDuration) {
             reset();
         }
     }

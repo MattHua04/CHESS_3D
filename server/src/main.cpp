@@ -72,6 +72,23 @@ void startGame(int client1, int client2) {
     cout << "Game ended." << endl;
 }
 
+bool isPlayerConnected(int player_socket) {
+    char buffer;
+    // Check if the player is connected
+    int result = recv(player_socket, &buffer, 1, MSG_DONTWAIT);
+    
+    if (result < 0) {
+        if (errno == ECONNRESET) {
+            return false;
+        }
+    } else if (result == 0) {
+        // Connection was closed by the player
+        return false;
+    }
+    
+    return true;
+}
+
 void pairAvailablePlayers(int server_socket) {
     while (true) {
         struct sockaddr_in client_address;
@@ -94,13 +111,31 @@ void pairAvailablePlayers(int server_socket) {
         // Pair two players together
         {
             lock_guard<mutex> lock(queue_mutex);
-            if (client_queue.size() >= 2) {
+            while (client_queue.size() >= 2) {
                 int player1 = client_queue.front();
                 client_queue.pop();
                 int player2 = client_queue.front();
                 client_queue.pop();
 
-                thread(startGame, player1, player2).detach();
+                // Check if both players are still connected
+                if (isPlayerConnected(player1) && isPlayerConnected(player2)) {
+                    thread(startGame, player1, player2).detach();
+                } else {
+                    // If one player is disconnected, keep the connected player and check again
+                    if (isPlayerConnected(player1)) {
+                        client_queue.push(player1);
+                    } else {
+                        cout << "Player " << player1 << " has disconnected." << endl;
+                        close(player1); // Close the socket for the disconnected player
+                    }
+
+                    if (isPlayerConnected(player2)) {
+                        client_queue.push(player2);
+                    } else {
+                        cout << "Player " << player2 << " has disconnected." << endl;
+                        close(player2); // Close the socket for the disconnected player
+                    }
+                }
             }
         }
     }
