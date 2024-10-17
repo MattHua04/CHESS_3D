@@ -14,10 +14,9 @@ if (APPLE)
     set(GLEW_DIR /usr/local/opt/glew)
     set(ASSIMP_LIBRARIES /opt/homebrew/lib/libassimp.dylib)
 elseif (WIN32)
-    message(STATUS "Using vcpkg for dependencies on Windows.")
-    set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/../vcpkg/scripts/buildsystems/vcpkg.cmake)
+    message(STATUS "Windows not supported.")
 elseif (UNIX AND NOT APPLE)
-    message(STATUS "Configuring for Linux")
+    message(STATUS "Configuring for Linux.")
 endif()
 
 find_package(OpenGL REQUIRED)
@@ -43,11 +42,7 @@ if(NOT EXISTS ${STOCKFISH_EXECUTABLE})
             COMMENT "Building Stockfish for macOS"
         )
     elseif (WIN32)
-        add_custom_target(build_stockfish ALL
-            COMMAND mingw32-make build ARCH=x86-64
-            WORKING_DIRECTORY ${STOCKFISH_DIR}
-            COMMENT "Building Stockfish for Windows"
-        )
+        message(STATUS "Stockfish is only supported on Unix-based systems.")
     endif()
 else()
     message(STATUS "Stockfish executable found.")
