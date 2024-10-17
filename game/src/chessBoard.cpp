@@ -115,6 +115,33 @@ void ChessBoard::render() {
     for (const auto& piece : pieces) {
         piece->render();
     }
+
+    // Sort taken pieces
+    takenWhitePieces = sortTakenPieces(takenWhitePieces);
+    takenBlackPieces = sortTakenPieces(takenBlackPieces);
+    // Render taken pieces
+    for (int i = 0; i < takenWhitePieces.size(); ++i) {
+        ChessPiece* piece = takenWhitePieces[i];
+        // Taken pieces past 8 go in second row
+        int offset = (i < 8) ? -1 : -2;
+        piece->setPosition(offset, 7-(i%8), 0);
+        piece->render();
+    }
+    for (int i = 0; i < takenBlackPieces.size(); ++i) {
+        ChessPiece* piece = takenBlackPieces[i];
+        // Taken pieces past 8 go in second row
+        int offset = (i < 8) ? 8 : 9;
+        piece->setPosition(offset, i%8, 0);
+        piece->render();
+    }
+}
+
+vector<ChessPiece*> ChessBoard::sortTakenPieces(vector<ChessPiece*>& pieces) {
+    sort(pieces.begin(), pieces.end(), [](const ChessPiece* a, const ChessPiece* b) {
+        map<string, int> importance = {{"queen", 1}, {"rook", 2}, {"bishop", 3}, {"knight", 4}, {"pawn", 5}};
+        return importance[a->getType()] < importance[b->getType()];
+    });
+    return pieces;
 }
 
 pair<int, int> ChessBoard::getPositionFromNotation(const string& notation) {
@@ -423,12 +450,21 @@ void ChessBoard::movePiece(const string& move, bool sendMoveToMultiplayerOpponen
         playNormalMoveSound = false;
     }
 
-    // If there was a piece at the destination, remove it from the pieces vector and delete it
+    /**
+     * If there was a piece at the destination, remove it from the pieces vector
+     * and put it in the appropriate taken pieces vector
+     */
     if (capturedPiece != nullptr) {
         captureSound.play();
+        capturedPiece->setTaken(true);
+        if (capturedPiece->getPlayer() == "white") {
+            takenWhitePieces.push_back(capturedPiece);
+        } else {
+            takenBlackPieces.push_back(capturedPiece);
+        }
+        
         auto it = find(pieces.begin(), pieces.end(), capturedPiece);
         if (it != pieces.end()) {
-            delete *it;
             pieces.erase(it);
         }
     }
@@ -728,6 +764,18 @@ void ChessBoard::reset() {
             board[i][j] = nullptr;
         }
     }
+
+    for (auto piece : takenWhitePieces) {
+        delete piece;
+        piece = nullptr;
+    }
+    takenWhitePieces.clear();
+
+    for (auto piece : takenBlackPieces) {
+        delete piece;
+        piece = nullptr;
+    }
+    takenBlackPieces.clear();
 
     // Initialize the white pieces
     addPiece(new ChessPiece(0, 0, 0, "rook", "white"), 0, 0);

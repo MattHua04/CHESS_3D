@@ -50,6 +50,7 @@ ChessPiece::ChessPiece(float x, float y, float z, string type, string player) {
     pieceTexture = (player == "white") ? whiteTexture : blackTexture;
     modelMatrix = glm::mat4(1.0f);
     updateModelMatrix();
+    taken = false;
 }
 
 glm::vec3 ChessPiece::getPosition() const {
@@ -141,9 +142,9 @@ void ChessPiece::render() const {
     glActiveTexture(GL_TEXTURE0);
     GLuint useTexture;
     if (player == "white") {
-        useTexture = (hovered) ? greyTexture : pieceTexture;
+        useTexture = (hovered && !taken) ? greyTexture : pieceTexture;
     } else {
-        useTexture = (hovered) ? darkGreyTexture : pieceTexture;
+        useTexture = (hovered && !taken) ? darkGreyTexture : pieceTexture;
     }
 
     glBindTexture(GL_TEXTURE_2D, useTexture);

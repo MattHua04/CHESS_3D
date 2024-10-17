@@ -112,6 +112,11 @@ public:
      */
     void animateMove(float x, float y, float z, bool& animating);
 
+    /**
+     * @brief Set whether a piece is taken.
+     */
+    void setTaken(bool taken) {this->taken = taken;};
+
     static GLuint blackTexture; // Texture for black pieces
     static GLuint whiteTexture; // Texture for white pieces
     static GLuint greyTexture; // Texture for grey pieces
@@ -128,6 +133,7 @@ private:
     string boardLocation; // Location of the piece on the chessboard
     glm::mat4 modelMatrix; // Model matrix for the piece
     bool hasMoved; // Whether the piece has moved
+    bool taken; // Whether the piece has been taken
 };
 
 #endif

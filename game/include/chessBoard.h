@@ -151,6 +151,10 @@ private:
     bool opponentMoveReceived; // Flag to indicate if the opponent's move has been received
     bool gameRunning; // Flag to indicate if the game is running
     bool animating; // Flag to indicate if a piece is being animated
+    vector<ChessPiece*> takenWhitePieces; // List of white pieces taken
+    vector<ChessPiece*> takenBlackPieces; // List of black pieces taken
+
+    vector<ChessPiece*> sortTakenPieces(vector<ChessPiece*>& pieces);
 
     /**
      * @brief Checks if a square is under attack by a player.
