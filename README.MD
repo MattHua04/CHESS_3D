@@ -32,7 +32,7 @@ __This project was developed on MacOS Apple Silicon, limited testing has been do
 ```brew install glfw glew glm assimp curl nlohmann-json```
 
     * __Windows__: 
-```./vcpkg/vcpkg install glfw glew glm assimp curl nlohmann-json && ./vcpkg/vcpkg integrate install```
+Unfortunately, the source code for Stockfish and multiplayer support will not compile on Windows machines.
 
     * __Linux__: 
 ```sudo apt install libglfw3-dev libglew-dev libglm-dev assimp-utils libcurl4-openssl-dev nlohmann-json3-dev```
