@@ -7,7 +7,7 @@ ChessBoard::ChessBoard()
     selectedPieceLocation(""), targetPointerLocation(""), playerTurn("white"),
     FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"), opponentProcessing(false),
     checkMatedTime(0), whiteInCheck(false), blackInCheck(false), opponentMove(""), opponentMoveReceived(false),
-    gameRunning(false), overrideMode(false) {
+    gameRunning(false), animating(false), overrideMode(false) {
 
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
@@ -39,7 +39,7 @@ ChessBoard::ChessBoard(glm::vec3 position)
     selectedPieceLocation(""), targetPointerLocation(""), playerTurn("white"),
     FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"), opponentProcessing(false),
     checkMatedTime(0), whiteInCheck(false), blackInCheck(false), opponentMove(""), opponentMoveReceived(false),
-    gameRunning(false), overrideMode(false) {
+    gameRunning(false), animating(false), overrideMode(false) {
     
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
@@ -445,11 +445,27 @@ void ChessBoard::movePiece(const string& move, bool sendMoveToMultiplayerOpponen
             default: promotionTypeStr = "queen"; break;
         }
         piece->convertTo(promotionTypeStr);
-        piece->setPosition(dst.first, dst.second, 0);
+        // Put the piece back to its original position and animate the move
+        piece->setPosition(src.first, src.second, 0);
+        // Set the destination board location of the piece
+        piece->setBoardLocation(string(1, 'a' + dst.first) + to_string(dst.second + 1));
+        animating = true;
+        thread animateThread([piece, dst, this]() {
+            piece->animateMove(dst.first, dst.second, 0.0f, ref(this->animating));
+        });
+        animateThread.detach();
         FEN = appendMoveToFEN(FEN, move);
         FEN = changePieceAtLocation(FEN, move.substr(2, 2), promotionTypeStr, piece->getPlayer());
     } else {
-        piece->setPosition(dst.first, dst.second, 0);
+        // Put the piece back to its original position and animate the move
+        piece->setPosition(src.first, src.second, 0);
+        // Set the destination board location of the piece
+        piece->setBoardLocation(string(1, 'a' + dst.first) + to_string(dst.second + 1));
+        animating = true;
+        thread animateThread([piece, dst, this]() {
+            piece->animateMove(dst.first, dst.second, 0.0f, ref(this->animating));
+        });
+        animateThread.detach();
         piece->setHasMoved(true);
         FEN = appendMoveToFEN(FEN, move);
     }
@@ -536,7 +552,7 @@ void ChessBoard::userInteraction() {
     } else if (selectedPieceLocation == hoveredPieceLocation && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
         selectedPieceLocation = "";
         while (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {glfwPollEvents();}
-    } else if (targetPointerLocation != "" && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+    } else if (!animating && targetPointerLocation != "" && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
         movePiece(selectedPieceLocation + targetPointerLocation);
         selectedPieceLocation = "";
         while (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {glfwPollEvents();}
@@ -568,11 +584,11 @@ void ChessBoard::update() {
     }
 
     // Check if it is the opponent's turn and get the opponent's move
-    if (!overrideMode && playerTurn != playerColor && !opponentProcessing && !opponentMoveReceived) {
+    if (!overrideMode && !animating && playerTurn != playerColor && !opponentProcessing && !opponentMoveReceived) {
         opponentProcessing = true;
         thread opponentThread(&ChessBoard::getOpponentMove, this);
         opponentThread.detach();
-    } else if (!overrideMode && playerTurn != playerColor && !opponentProcessing && opponentMoveReceived) {
+    } else if (!overrideMode && !animating && playerTurn != playerColor && !opponentProcessing && opponentMoveReceived) {
         // Execute the opponent's move
         movePiece(opponentMove);
         opponentMove = "";

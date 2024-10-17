@@ -150,6 +150,7 @@ private:
     string opponentMove; // The move received from the opponent
     bool opponentMoveReceived; // Flag to indicate if the opponent's move has been received
     bool gameRunning; // Flag to indicate if the game is running
+    bool animating; // Flag to indicate if a piece is being animated
 
     /**
      * @brief Checks if a square is under attack by a player.

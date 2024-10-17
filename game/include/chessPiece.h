@@ -53,6 +53,12 @@ public:
     string getBoardLocation() const;
 
     /**
+     * @brief Sets the board location of the chess piece.
+     * @param location The board location of the chess piece.
+     */
+    void setBoardLocation(string location) {boardLocation = location;};
+
+    /**
      * @brief Returns whether the piece has moved.
      * @return True if the piece has moved, false otherwise.
      */
@@ -97,6 +103,14 @@ public:
      * @brief Renders the chess piece.
      */
     void render() const;
+
+    /**
+     * @brief Animates the move of the chess piece.
+     * @param x The x-coordinate to move to.
+     * @param y The y-coordinate to move to.
+     * @param z The z-coordinate to move to.
+     */
+    void animateMove(float x, float y, float z, bool& animating);
 
     static GLuint blackTexture; // Texture for black pieces
     static GLuint whiteTexture; // Texture for white pieces

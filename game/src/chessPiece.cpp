@@ -153,3 +153,24 @@ void ChessPiece::render() const {
     glBindVertexArray(pieceVAO);
     glDrawArrays(GL_TRIANGLES, 0, pieceVertexCount);
 }
+
+void ChessPiece::animateMove(float x, float y, float z, bool& animating) {
+    glm::vec3 startPosition = position;
+    glm::vec3 endPosition = glm::vec3(x, y, z);
+    int steps = 100;
+    glm::vec3 a0(0.3f * 4, 0, -0.3f * 4);
+    glm::vec3 adjustedEndPosition = a0 + glm::vec3(-0.3f * x - 0.3f / 2, 0, 0.3f * y + 0.3f / 2);
+    for (int i = 0; i <= steps; ++i) {
+        float t = static_cast<float>(i) / steps;
+        glm::vec3 intermediatePosition = glm::mix(startPosition, adjustedEndPosition, t);
+        // Knight moves in a curve
+        if (type == "knight") {
+            float height = 0.5f * sin(glm::pi<float>() * t);
+            intermediatePosition.y += height;
+        }
+        position = intermediatePosition;
+        updateModelMatrix();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    animating = false;
+}
