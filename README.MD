@@ -59,6 +59,6 @@ Unfortunately, the source code for Stockfish and multiplayer support cannot be c
         * ```-diff <difficulty>```: optional manual Stockfish difficulty [0, 20] (only applies to local Stockfish, defaults to 10)
         * ```-depth <processing depth>```: optional manual processing depth for Stockfish (defaults to 10)
         * ```-remote```: optional flag to use the Stockfish REST API instead of running Stockfish locally
-        * ```-multiplayer```: optional flag to attempt joining a multiplayer match
+        * ```-multiplayer```: optional flag to attempt to join a multiplayer match
 
     * To start the multiplayer server, execute in the [server source directory](server/src/): ```g++ main.cpp -o main && ./main```
