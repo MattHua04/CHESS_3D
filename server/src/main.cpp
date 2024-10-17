@@ -11,32 +11,34 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <csignal>
 
 using namespace std;
 
+int serverSocket;
 const int PORT = 12345;
-mutex queue_mutex;
-queue<int> client_queue;
+mutex queueMutex;
+queue<int> clientQueue;
 
 void handlePlayer(int sender, int receiver) {
     char buffer[1024];
     while (true) {
         // Receive message length from source player
-        uint32_t message_length_network;
-        ssize_t bytes_received = recv(sender, &message_length_network, sizeof(message_length_network), 0);
-        if (bytes_received <= 0) break;
+        uint32_t messageLengthNetwork;
+        ssize_t bytesRecieved = recv(sender, &messageLengthNetwork, sizeof(messageLengthNetwork), 0);
+        if (bytesRecieved <= 0) break;
 
-        uint32_t message_length = ntohl(message_length_network);
+        uint32_t messageLength = ntohl(messageLengthNetwork);
 
         // Receive the actual message from source player
-        bytes_received = recv(sender, buffer, message_length, 0);
-        if (bytes_received <= 0) break;
-        buffer[bytes_received] = '\0';
+        bytesRecieved = recv(sender, buffer, messageLength, 0);
+        if (bytesRecieved <= 0) break;
+        buffer[bytesRecieved] = '\0';
 
         // Forward the message length to destination player
-        send(receiver, &message_length_network, sizeof(message_length_network), 0);
+        send(receiver, &messageLengthNetwork, sizeof(messageLengthNetwork), 0);
         // Forward the actual message to destination player
-        send(receiver, buffer, message_length, 0);
+        send(receiver, buffer, messageLength, 0);
     }
 
     close(sender);
@@ -72,10 +74,10 @@ void startGame(int client1, int client2) {
     cout << "Game ended." << endl;
 }
 
-bool isPlayerConnected(int player_socket) {
+bool isPlayerConnected(int playerSocket) {
     char buffer;
     // Check if the player is connected
-    int result = recv(player_socket, &buffer, 1, MSG_DONTWAIT);
+    int result = recv(playerSocket, &buffer, 1, MSG_DONTWAIT);
     
     if (result < 0) {
         if (errno == ECONNRESET) {
@@ -89,13 +91,13 @@ bool isPlayerConnected(int player_socket) {
     return true;
 }
 
-void pairAvailablePlayers(int server_socket) {
+void pairAvailablePlayers(int serverSocket) {
     while (true) {
-        struct sockaddr_in client_address;
-        socklen_t client_len = sizeof(client_address);
-        int client_socket = accept(server_socket, (struct sockaddr*)&client_address, &client_len);
+        struct sockaddr_in clientAddress;
+        socklen_t clientLen = sizeof(clientAddress);
+        int clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddress, &clientLen);
 
-        if (client_socket < 0) {
+        if (clientSocket < 0) {
             cerr << "Failed to accept player." << endl;
             continue;
         }
@@ -104,18 +106,18 @@ void pairAvailablePlayers(int server_socket) {
 
         // Add players to the queue
         {
-            lock_guard<mutex> lock(queue_mutex);
-            client_queue.push(client_socket);
+            lock_guard<mutex> lock(queueMutex);
+            clientQueue.push(clientSocket);
         }
 
         // Pair two players together
         {
-            lock_guard<mutex> lock(queue_mutex);
-            while (client_queue.size() >= 2) {
-                int player1 = client_queue.front();
-                client_queue.pop();
-                int player2 = client_queue.front();
-                client_queue.pop();
+            lock_guard<mutex> lock(queueMutex);
+            while (clientQueue.size() >= 2) {
+                int player1 = clientQueue.front();
+                clientQueue.pop();
+                int player2 = clientQueue.front();
+                clientQueue.pop();
 
                 // Check if both players are still connected
                 if (isPlayerConnected(player1) && isPlayerConnected(player2)) {
@@ -123,14 +125,14 @@ void pairAvailablePlayers(int server_socket) {
                 } else {
                     // If one player is disconnected, keep the connected player and check again
                     if (isPlayerConnected(player1)) {
-                        client_queue.push(player1);
+                        clientQueue.push(player1);
                     } else {
                         cout << "Player " << player1 << " has disconnected." << endl;
                         close(player1); // Close the socket for the disconnected player
                     }
 
                     if (isPlayerConnected(player2)) {
-                        client_queue.push(player2);
+                        clientQueue.push(player2);
                     } else {
                         cout << "Player " << player2 << " has disconnected." << endl;
                         close(player2); // Close the socket for the disconnected player
@@ -141,32 +143,41 @@ void pairAvailablePlayers(int server_socket) {
     }
 }
 
+void signalHandler(int signum) {
+    cout << "\nInterrupt signal (" << signum << ") received. Closing server socket." << endl;
+    close(serverSocket);
+    exit(signum);
+}
+
 int main() {
-    int server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_socket == -1) {
+    signal(SIGINT, signalHandler);
+    signal(SIGTERM, signalHandler);
+    
+    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (serverSocket == -1) {
         cerr << "Failed to create socket." << endl;
         return 1;
     }
 
-    struct sockaddr_in server_address;
-    server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = INADDR_ANY;
-    server_address.sin_port = htons(PORT);
+    struct sockaddr_in serverAddress;
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_addr.s_addr = INADDR_ANY;
+    serverAddress.sin_port = htons(PORT);
 
-    if (::bind(server_socket, (struct sockaddr*)&server_address, sizeof(server_address)) < 0) {
+    if (::bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
         perror("Bind failed");
-        close(server_socket);
+        close(serverSocket);
         return -1;
     }
 
-    if (listen(server_socket, 5) < 0) {
+    if (listen(serverSocket, 5) < 0) {
         cerr << "Failed to listen on socket." << endl;
         return 1;
     }
 
     cout << "Server is listening on port " << PORT << endl;
-    pairAvailablePlayers(server_socket);
+    pairAvailablePlayers(serverSocket);
 
-    close(server_socket);
+    close(serverSocket);
     return 0;
 }
